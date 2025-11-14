@@ -7,7 +7,7 @@ SSID = "Moes iPhone"
 PASSWORD = "moe2drizzy"
 
 MQTT_BROKER = "172.20.10.2"   # Pi IP on hotspot
-MQTT_PORT = 1883              # must match Mosquitto
+MQTT_PORT = 1883              # matches Mosquitto
 TOPIC = b"temp/pico"          # bytes, not str
 CLIENT_ID = b"subscribe"
 
@@ -33,7 +33,7 @@ def connect_wifi():
 
 def mqtt_callback(topic, msg):
     try:
-        # msg is already bytes; no need to .decode() if using float(msg)
+        # msg is already bytes;
         temp = float(msg)
         print(f"Temperature received: {temp} °C")
 
