@@ -1,5 +1,5 @@
 import time
-import network 
+import network
 from machine import Pin
 from umqtt.robust import MQTTClient
 
@@ -7,37 +7,34 @@ SSID = "Moes iPhone"
 PASSWORD = "moe2drizzy"
 
 MQTT_BROKER = "172.20.10.2"   # Pi IP on hotspot
-MQTT_PORT = 1883              # matches Mosquitto
-TOPIC = b"temp/pico"          # bytes, not str
+MQTT_PORT = 1883
+TOPIC = b"temp/pico"
 CLIENT_ID = b"subscribe"
 
-#Built-in LED on Pico W
+Built-in LED on Pico W
 led = Pin("LED", Pin.OUT)
 
-
 def connect_wifi():
-    wlan = network.WLAN(network.STAIF)
+    wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     wlan.connect(SSID, PASSWORD)
 
     print("Connecting to WiFi...")
-    for  in range(20):
+    for i in range(20):
         if wlan.isconnected():
             print("Connected to WiFi")
             print("IP:", wlan.ifconfig()[0])
-            return
+            return wlan
         time.sleep(1)
 
     raise RuntimeError("WiFi failed to connect")
 
-
 def mqtt_callback(topic, msg):
     try:
-        # msg is already bytes;
-        temp = float(msg)
-        print(f"Temperature received: {temp} °C")
+        temp = float(msg)  # msg is bytes but float() can parse it if it's like b"23.4"
+        print("Temperature received:", temp, "°C")
 
-        if temp > 25:
+        if temp > 23:
             print("Temperature too high! Turning ON LED.")
             led.value(1)
         else:
@@ -46,7 +43,6 @@ def mqtt_callback(topic, msg):
 
     except Exception as e:
         print("Error parsing message:", e)
-
 
 def connect_mqtt():
     mqtt = MQTTClient(
@@ -58,17 +54,17 @@ def connect_mqtt():
 
     mqtt.set_callback(mqtt_callback)
     mqtt.connect()
-    print(f"Connected to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}")
+    print("Connected to MQTT broker at {}:{}".format(MQTT_BROKER, MQTT_PORT))
 
     mqtt.subscribe(TOPIC)
-    print(f"Subscribed to topic: {TOPIC}")
+    print("Subscribed to topic:", TOPIC)
 
     return mqtt
-
 
 if name == "main":
     connect_wifi()
     mqtt = connect_mqtt()
 
     while True:
-        mqtt.wait_msg()  # blocks until a message arrives
+        mqtt.wait_msg()
+
